@@ -16,6 +16,7 @@ const ImageCard = ({ image, setSelectedImage, toggleModal }) => {
   } = image;
   const [spans, setSpan] = React.useState();
   const ref = React.createRef();
+  
   React.useEffect(() => {
     const setSpans = () => {
       const height = ref.current?.clientHeight;

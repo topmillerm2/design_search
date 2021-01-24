@@ -18,13 +18,15 @@ const delay = (milliseconds) =>
   new Promise((resolve) => setTimeout(resolve, milliseconds));
 
 const App = () => {
-  const userSearching = React.useCallback(() => getItem('userIsSearching'), []);
   const [images, setImages] = React.useState([]);
   const [apiStatus, setApiStatus] = React.useState(null);
   const [currentPage, setCurrentPage] = React.useState(1);
   const [pagination, setPagination] = React.useState(50);
   const [showFavorites, toggleFavorites] = React.useState(false);
   const [throttle, toggleThrottle] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
+
+  console.log(throttle);
 
   const fetchData = React.useCallback(async () => {
     try {
@@ -37,23 +39,23 @@ const App = () => {
       });
       setApiStatus(status);
       setImages(data);
+      setIsLoading(false);
     } catch (err) {
       setApiStatus(400);
     }
   }, [currentPage]);
 
   React.useEffect(() => {
-    if (userSearching) {
+    if (getItem('userIsSearching')) {
       removeItem('userIsSearching');
-      fetchData();
     }
-  }, [userSearching, fetchData]);
+  }, []);
 
   React.useEffect(() => {
-    if (!userSearching) {
+    if (!getItem('userIsSearching')) {
       fetchData();
     }
-  }, [fetchData]);
+  }, [fetchData, currentPage]);
 
   const onSearchSubmit = React.useCallback(
     async (term = getItem('searchTerm'), color = getItem('color')) => {
@@ -65,7 +67,7 @@ const App = () => {
         } = await axios.get('/search/photos', {
           params: {
             query: term,
-            page: userSearching ? currentPage : 1,
+            page: currentPage,
             per_page: IMAGES_PER_PAGE,
             color: color === 'null' ? undefined : color,
           },
@@ -78,7 +80,7 @@ const App = () => {
         setApiStatus(400);
       }
     },
-    [currentPage, userSearching, throttle]
+    [currentPage, throttle]
   );
 
   return (
@@ -104,18 +106,20 @@ const App = () => {
               onSubmit={onSearchSubmit}
               setCurrentPage={setCurrentPage}
               setPagination={setPagination}
+              setIsLoading={setIsLoading}
             />
             {images.length === 0 && !apiStatus ? (
               <Loader />
             ) : (
               <>
-                <ImageList images={images} />
+                <ImageList images={images} isLoading={isLoading} />
                 {images.length > 0 && (
                   <Pagination
                     currentPage={currentPage}
                     pagination={pagination}
                     setCurrentPage={setCurrentPage}
                     onPagePress={onSearchSubmit}
+                    setIsLoading={setIsLoading}
                   />
                 )}
               </>
@@ -124,7 +128,8 @@ const App = () => {
         )}
         {showFavorites && (
           <ImageList
-            images={JSON.parse(getItem('favorites')).map((url) => ({
+            images={JSON.parse(getItem('favorites')).map((url, i) => ({
+              id: i,
               description: '',
               urls: { regular: url },
             }))}

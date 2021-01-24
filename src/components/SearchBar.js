@@ -13,33 +13,23 @@ const SearchBar = ({
   refetch,
   setCurrentPage,
   setPagination,
-  toggleLoading,
+  setIsLoading,
 }) => {
   const [searchTerm, setSearchTerm] = React.useState('');
   const [radioValue, setRadioValue] = React.useState(null);
 
-  const onInputChange = (e) => {
-    const {
-      target: { value },
-    } = e;
-    if (!value) {
-      removeItem('userIsSearching');
-      setCurrentPage(1);
-      setPagination(50);
-    }
-    setSearchTerm(value);
-  };
+  const onInputChange = ({ target: { value } }) => setSearchTerm(value);
 
-  const onRadioChange = ({ target: { value } }) => {
+  const onRadioChange = ({ target: { value } }) =>
     setRadioValue(!value ? null : value);
-  };
 
-  const onFormSubmit = (e) => {
+  const onFormSubmit = async (e) => {
     e.preventDefault();
-    // toggleLoading();
+    setIsLoading(true);
     setItem('searchTerm', searchTerm);
     setItem('color', radioValue);
-    onSubmit(searchTerm, radioValue);
+    await onSubmit(searchTerm, radioValue);
+    setIsLoading(false);
   };
 
   const resetFields = () => {

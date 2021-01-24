@@ -13,12 +13,17 @@ const Pagination = ({
   pagination,
   setCurrentPage,
   onPagePress,
+  setIsLoading,
 }) => {
-  React.useEffect(() => {
-    if (getItem('userIsSearching') === 'true') onPagePress();
+  React.useEffect(async () => {
+    if (getItem('userIsSearching') === 'true') {
+      await onPagePress();
+      setIsLoading(false);
+    }
   }, [currentPage, onPagePress]);
 
   const onPageClick = (page) => {
+    setIsLoading(true);
     setCurrentPage(page);
     window.scrollTo(0, 0);
   };

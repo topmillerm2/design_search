@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { getItem, setItem } from '../localStorage';
 import ImageCard from './ImageCard';
+import Loader from './Loader';
 
 const NoResultsContainer = styled.div`
   align-items: center;
@@ -35,7 +36,7 @@ const Modal = styled.div`
   left: 12%;
 `;
 
-const ImageList = ({ images }) => {
+const ImageList = ({ images, isLoading }) => {
   const [selectedImage, setSelectedImage] = React.useState({});
   const [isModalActive, toggleModal] = React.useState(false);
   const [favs, updateFavs] = React.useState(JSON.parse(getItem('favorites')));
@@ -88,6 +89,10 @@ const ImageList = ({ images }) => {
       );
     }
   };
+
+  if (isLoading) {
+    return <Loader />
+  }
 
   return images.length === 0 ? (
     <NoResultsContainer>
